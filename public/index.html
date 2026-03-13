@@ -1,66 +1,293 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-		/>
-		<title>Scramjet</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pluto V1 · background particles</title>
+  
+  <link rel="shortcut icon" href="favicon.webp" />
+  <link rel="stylesheet" href="index.css" />
+  
+  <style>
+    /* ----- global reset & layout ----- */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+      cursor: none;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
 
-		<link rel="shortcut icon" content="favicon.webp" />
-	
-		<script src="/scram/scramjet.all.js"></script>
-		<script src="/baremux/index.js"></script>
-		
-		<link rel="stylesheet" href="index.css" />
-		<script src="register-sw.js" defer></script>
-		<script src="search.js" defer></script>
-		<script src="index.js" defer></script>
-	</head>
+    .background-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: -2;
+      pointer-events: none;
+    }
 
-	<body>
-		<div title="Scramjet Logo" class="flex-center logo-wrapper header-center">
-			<img class="logo" src="sj.png" alt="Scramjet" />
-			<h1>Scramjet | MW</h1>
-		</div>
-		<div class="flex-center desc left-margin">
-			<p>
-				Scramjet is an experimental interception based web proxy designed to
-				evade internet censorship, bypass arbitrary web browser restrictions and
-				innovate web proxy technologies.
-			</p>
-		</div>
+    /* ----- Pluto original elements ----- */
+    .logo-wrapper {
+      margin-top: 10vh;
+      text-align: center;
+    }
+    .flex-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .logo {
+      width: 140px;
+      height: auto;
+      filter: drop-shadow(0 0 12px rgba(255, 210, 150, 0.4));
+    }
+    .header-center h1 {
+      color: #f0dbb4;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+    }
 
-		<form id="sj-form" class="flex-center">
-			<input
-				id="sj-search-engine"
-				value="https://www.google.com/search?q=%s"
-				type="hidden"
-			/>
-			<input id="sj-address" type="text" placeholder="Search the web freely" />
-		</form>
-		<div class="desc left-margin">
-			<p id="sj-error"></p>
-			<pre id="sj-error-code"></pre>
-		</div>
-		<footer>
-			<div>
-				<a
-					title="The Mercury Workshop GitHub organization"
-					href="https://github.com/MercuryWorkshop"
-					>Mercury Workshop</a
-				>
-				<a
-					title="The example demo app for Scramjet"
-					href="https://github.com/MercuryWorkshop/Scramjet-Demo"
-					>GitHub</a
-				>
-				<a title="License information" href="credits.html">Credits</a>
-			</div>
-			<div>
-				<span>Scramjet &copy; MW 2025</span>
-			</div>
-		</footer>
-	</body>
+    /* search form */
+    #sj-form {
+      margin-top: 2rem;
+      width: 100%;
+    }
+    #sj-address {
+      width: min(400px, 70vw);
+      padding: 14px 24px;
+      background: rgba(20, 15, 10, 0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 210, 150, 0.25);
+      border-radius: 60px;
+      font-size: 1.2rem;
+      color: #ffebcd;
+      outline: none;
+      text-align: center;
+      transition: border 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    #sj-address::placeholder {
+      color: #bc9f7a;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+    #sj-address:focus {
+      border-color: #e6b87e;
+      box-shadow: 0 0 20px #d9a06680;
+    }
+
+    /* ----- NEW BUTTON STYLING ----- */
+    .action-button {
+      margin-top: 20px;
+      padding: 12px 35px;
+      background: rgba(20, 15, 10, 0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 210, 150, 0.25);
+      border-radius: 60px;
+      color: #ffebcd;
+      font-size: 1rem;
+      cursor: none; 
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+      letter-spacing: 1px;
+      z-index: 10;
+    }
+
+    .action-button:hover {
+      border-color: #e6b87e;
+      background: rgba(45, 35, 25, 0.85);
+      box-shadow: 0 0 15px #d9a06640;
+      transform: translateY(-2px);
+    }
+
+    /* error area */
+    #sj-error, #sj-error-code {
+      color: #ffb9a0;
+      background: #2a1e1a;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      font-size: 0.9rem;
+    }
+
+    /* footer */
+    footer {
+      position: fixed;
+      bottom: 12px;
+      width: 100%;
+      text-align: center;
+      color: #7a624b;
+      font-size: 0.85rem;
+      background: transparent;
+      z-index: 1;
+    }
+
+    /* custom cursor */
+    .cursor {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #f5d7a1, #caa06a, #8a6a45, #4e3b28);
+      box-shadow: 0 0 6px rgba(255, 210, 150, 0.6);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      will-change: transform;
+    }
+    .cursor::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      filter: blur(1px);
+    }
+
+    /* hover scale for button */
+    .action-button:hover ~ .cursor {
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+  </style>
+</head>
+<body>
+
+  <canvas class="background-canvas" id="particleCanvas"></canvas>
+  <div class="cursor" id="customCursor"></div>
+
+  <div title="Pluto" class="flex-center logo-wrapper header-center">
+    <img class="logo" src="rs.png" alt="Pluto logo" />
+    <h1> </h1>
+  </div>
+
+  <div class="flex-center desc left-margin">
+    <p></p>
+  </div>
+
+  <form id="sj-form" class="flex-center">
+    <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
+    <input id="sj-address" type="text" placeholder="Search The Galaxy" />
+  </form>
+
+  <div class="flex-center">
+    <button class="action-button" onclick="window.location.href='your-page.html'">
+      games
+    </button>
+  </div>
+
+  <div class="desc left-margin">
+    <p id="sj-error"></p>
+    <pre id="sj-error-code"></pre>
+  </div>
+
+  <footer>
+    <div><span></span></div>
+  </footer>
+
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="baremux/index.js" defer></script>
+  <script src="epoxy/index.js" defer></script>
+  <script src="register-sw.js" defer></script>
+  <script src="search.js" defer></script>
+  <script src="index.js" defer></script>
+
+  <script>
+    (function() {
+      const canvas = document.getElementById('particleCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let mouseX = -1000;
+      let mouseY = -1000;
+
+      const PARTICLE_COUNT = 100;
+      const CONNECTION_DIST = 150;
+      const MOUSE_RADIUS = 200;
+      const MOUSE_FORCE = 0.5;
+      const BASE_SPEED = 0.4;
+
+      let particles = [];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * BASE_SPEED;
+          this.vy = (Math.random() - 0.5) * BASE_SPEED;
+          this.radius = 1.8 + Math.random() * 2.5;
+          this.opacity = 0.4 + Math.random() * 0.4;
+        }
+        update() {
+          const dx = this.x - mouseX;
+          const dy = this.y - mouseY;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < MOUSE_RADIUS) {
+            const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
+            const angle = Math.atan2(dy, dx);
+            this.vx += Math.cos(angle) * force * MOUSE_FORCE;
+            this.vy += Math.sin(angle) * force * MOUSE_FORCE;
+          }
+          this.vx += (Math.random() - 0.5) * 0.06;
+          this.vy += (Math.random() - 0.5) * 0.06;
+          const maxSpeed = 1.0;
+          let sp = Math.hypot(this.vx, this.vy);
+          if (sp > maxSpeed) {
+            this.vx = (this.vx / sp) * maxSpeed;
+            this.vy = (this.vy / sp) * maxSpeed;
+          }
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+          ctx.fillStyle = `rgba(255, 215, 160, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+      }
+
+      function animate() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (let p of particles) { p.update(); p.draw(); }
+        requestAnimationFrame(animate);
+      }
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initParticles();
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX; mouseY = e.clientY;
+        const cursorEl = document.getElementById('customCursor');
+        if (cursorEl) {
+          cursorEl.style.left = mouseX + 'px';
+          cursorEl.style.top = mouseY + 'px';
+          cursorEl.style.opacity = '1';
+        }
+      });
+
+      resizeCanvas();
+      animate();
+    })();
+  </script>
+</body>
 </html>
