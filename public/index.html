@@ -1,515 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#080810" />
-  <title>Pluto — Explore Beyond</title>
-
-  <link rel="shortcut icon" href="favicon.webp" />
-  <link rel="stylesheet" href="index.css" />
-
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #080810;
-      --text: #f6f1ff;
-      --muted: #9691ad;
-      --accent: #c7a6ff;
-      --gold: #f2d2a0;
-      --glass: rgba(20, 18, 35, 0.72);
-      --border: rgba(207, 184, 255, 0.16);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      min-height: 100%;
-    }
-
-    body {
-      min-height: 100vh;
-      margin: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse at 50% 38%,
-          rgba(112, 76, 173, 0.19), transparent 43%),
-        radial-gradient(ellipse at 15% 90%,
-          rgba(48, 65, 124, 0.12), transparent 42%),
-        linear-gradient(180deg, #090912 0%, #080810 100%);
-    }
-
-    .background-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 20px 76px;
-    }
-
-    .hero {
-      width: 100%;
-      max-width: 700px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      animation: appear 900ms ease both;
-    }
-
-    .logo-frame {
-      position: relative;
-      display: grid;
-      place-items: center;
-      width: 116px;
-      height: 116px;
-      margin-bottom: 25px;
-      border: 1px solid rgba(214, 192, 255, 0.18);
-      border-radius: 35px;
-      background: linear-gradient(
-        145deg,
-        rgba(255,255,255,0.08),
-        rgba(255,255,255,0.015)
-      );
-      box-shadow:
-        0 0 70px rgba(153, 111, 235, 0.12),
-        inset 0 1px rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px);
-    }
-
-    .logo {
-      width: 78px;
-      height: 78px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 20px rgba(205, 173, 255, 0.25));
-    }
-
-    .eyebrow {
-      margin: 0 0 13px;
-      color: var(--accent);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(3rem, 9vw, 5.5rem);
-      line-height: 1;
-      font-weight: 650;
-      letter-spacing: -0.075em;
-      background: linear-gradient(
-        115deg,
-        #fff 15%,
-        #ded0ff 55%,
-        #a68ad9 100%
-      );
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .subtitle {
-      max-width: 430px;
-      margin: 20px 0 0;
-      color: var(--muted);
-      font-size: 0.98rem;
-      line-height: 1.8;
-    }
-
-    #sj-form {
-      display: flex;
-      width: min(100%, 540px);
-      margin-top: 38px;
-    }
-
-    .search-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-      width: 100%;
-      padding: 6px;
-      border: 1px solid var(--border);
-      border-radius: 19px;
-      background: var(--glass);
-      box-shadow:
-        0 18px 70px rgba(0, 0, 0, 0.32),
-        inset 0 1px rgba(255,255,255,0.035);
-      backdrop-filter: blur(22px);
-      transition: border-color 220ms ease, box-shadow 220ms ease,
-        transform 220ms ease;
-    }
-
-    .search-wrap:focus-within {
-      border-color: rgba(199, 166, 255, 0.62);
-      box-shadow:
-        0 0 0 4px rgba(165, 126, 230, 0.08),
-        0 18px 70px rgba(0,0,0,0.35);
-      transform: translateY(-2px);
-    }
-
-    .search-icon {
-      flex: 0 0 auto;
-      width: 21px;
-      height: 21px;
-      margin-left: 15px;
-      color: #a99abb;
-    }
-
-    #sj-address {
-      width: 100%;
-      min-width: 0;
-      padding: 15px 14px;
-      border: 0;
-      outline: none;
-      background: transparent;
-      color: var(--text);
-      font: inherit;
-      font-size: 0.97rem;
-    }
-
-    #sj-address::placeholder {
-      color: #827b96;
-    }
-
-    .search-hint {
-      flex: 0 0 auto;
-      margin-right: 10px;
-      padding: 6px 9px;
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 8px;
-      color: #8d859e;
-      font-size: 0.7rem;
-      white-space: nowrap;
-    }
-
-    .search-note {
-      margin: 15px 0 0;
-      color: #777188;
-      font-size: 0.77rem;
-      letter-spacing: 0.025em;
-    }
-
-    .status {
-      width: min(100%, 540px);
-      margin-top: 18px;
-      overflow-wrap: anywhere;
-    }
-
-    #sj-error,
-    #sj-error-code {
-      color: #ffb7c5;
-      font-size: 0.85rem;
-    }
-
-    #sj-error:empty,
-    #sj-error-code:empty {
-      display: none;
-    }
-
-    #sj-error-code {
-      white-space: pre-wrap;
-    }
-
-    footer {
-      position: absolute;
-      right: 20px;
-      bottom: 22px;
-      left: 20px;
-      color: #716a83;
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      text-align: center;
-    }
-
-    .footer-dot {
-      display: inline-block;
-      width: 5px;
-      height: 5px;
-      margin-right: 8px;
-      border-radius: 50%;
-      background: #b99aff;
-      box-shadow: 0 0 10px rgba(185,154,255,0.7);
-      vertical-align: middle;
-    }
-
-    @keyframes appear {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .page {
-        padding: 36px 19px 76px;
-      }
-
-      .logo-frame {
-        width: 94px;
-        height: 94px;
-        border-radius: 29px;
-      }
-
-      .logo {
-        width: 65px;
-        height: 65px;
-      }
-
-      .subtitle {
-        font-size: 0.9rem;
-      }
-
-      #sj-form {
-        margin-top: 30px;
-      }
-
-      #sj-address {
-        padding: 14px 10px;
-        font-size: 0.9rem;
-      }
-
-      .search-hint {
-        display: none;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <canvas class="background-canvas" id="particleCanvas"
-    aria-hidden="true"></canvas>
-
-  <main class="page">
-    <section class="hero" aria-label="Pluto search">
-      <div class="logo-frame">
-        <img class="logo" src="rs.png" alt="Pluto logo" />
-      </div>
-
-      <p class="eyebrow">Your universe, unlocked</p>
-      <h1>Pluto</h1>
-
-      <p class="subtitle">
-        A quieter corner of the internet.
-        Search, explore, and discover something new.
-      </p>
-
-      <form id="sj-form">
-        <input
-          id="sj-search-engine"
-          value="https://duckduckgo.com/?q=%s"
-          type="hidden"
-        />
-
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="1.7"
-            stroke-linecap="round" aria-hidden="true">
-            <circle cx="10.8" cy="10.8" r="6.8"></circle>
-            <path d="m16 16 4.2 4.2"></path>
-          </svg>
-
-          <input
-            id="sj-address"
-            type="text"
-            placeholder="Search the galaxy..."
-            aria-label="Search the web"
-            autocomplete="off"
-            spellcheck="false"
-          />
-
-          <span class="search-hint">ENTER ↵</span>
-        </div>
-      </form>
-
-      <p class="search-note">
-        Made for curious minds.
-      </p>
-
-      <div class="status">
-        <p id="sj-error" role="status"></p>
-        <pre id="sj-error-code"></pre>
-      </div>
-    </section>
-
-    <footer>
-      <span class="footer-dot"></span>
-      PLUTO · EXPLORE BEYOND
-    </footer>
-  </main>
-
-  <script src="/scram/scramjet.all.js"></script>
-  <script src="baremux/index.js" defer></script>
-  <script src="epoxy/index.js" defer></script>
-  <script src="register-sw.js" defer></script>
-  <script src="search.js" defer></script>
-  <script src="index.js" defer></script>
-
-  <script>
-    (() => {
-      const canvas = document.getElementById("particleCanvas");
-      const ctx = canvas.getContext("2d");
-
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
-
-      let particles = [];
-      let width = 0;
-      let height = 0;
-      let frame = 0;
-
-      const PARTICLE_COUNT = 85;
-      const CONNECTION_DIST = 125;
-      const colors = [
-        "201, 177, 255",
-        "160, 157, 255",
-        "242, 210, 160"
-      ];
-
-      class Particle {
-        constructor() {
-          this.x = Math.random() * width;
-          this.y = Math.random() * height;
-          this.vx = (Math.random() - 0.5) * 0.32;
-          this.vy = (Math.random() - 0.5) * 0.32;
-          this.r = Math.random() * 1.5 + 0.5;
-          this.color = colors[
-            Math.floor(Math.random() * colors.length)
-          ];
-          this.alpha = Math.random() * 0.48 + 0.15;
-        }
-
-        update() {
-          if (reducedMotion) return;
-
-          this.x += this.vx;
-          this.y += this.vy;
-
-          if (this.x < 0 || this.x > width) this.vx *= -1;
-          if (this.y < 0 || this.y > height) this.vy *= -1;
-        }
-
-        draw() {
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
-          ctx.fill();
-        }
-      }
-
-      function resize() {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        width = window.innerWidth;
-        height = window.innerHeight;
-
-        canvas.width = Math.floor(width * dpr);
-        canvas.height = Math.floor(height * dpr);
-        canvas.style.width = width + "px";
-        canvas.style.height = height + "px";
-
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        const count = Math.min(
-          PARTICLE_COUNT,
-          Math.floor((width * height) / 11000)
-        );
-
-        particles = Array.from(
-          { length: Math.max(25, count) },
-          () => new Particle()
-        );
-
-        draw();
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, width, height);
-
-        for (let i = 0; i < particles.length; i++) {
-          const a = particles[i];
-          a.update();
-          a.draw();
-
-          for (let j = i + 1; j < particles.length; j++) {
-            const b = particles[j];
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const dist = Math.hypot(dx, dy);
-
-            if (dist < CONNECTION_DIST) {
-              const opacity =
-                (1 - dist / CONNECTION_DIST) * 0.13;
-
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.strokeStyle =
-                `rgba(184, 158, 235, ${opacity})`;
-              ctx.lineWidth = 0.6;
-              ctx.stroke();
-            }
-          }
-        }
-
-        if (!reducedMotion) {
-          frame = requestAnimationFrame(draw);
-        }
-      }
-
-      window.addEventListener("resize", resize);
-
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-          cancelAnimationFrame(frame);
-        } else if (!reducedMotion) {
-          cancelAnimationFrame(frame);
-          draw();
-        }
-      });
-
-      resize();
-    })();
-  </script>
-</body>
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+		/>
+		<title>Scramjet</title>
+
+		<link rel="shortcut icon" content="favicon.webp" />
+	
+		<script src="/scram/scramjet.all.js"></script>
+		<script src="/baremux/index.js"></script>
+		
+		<link rel="stylesheet" href="index.css" />
+		<script src="register-sw.js" defer></script>
+		<script src="search.js" defer></script>
+		<script src="index.js" defer></script>
+	</head>
+
+	<body>
+		<div title="Scramjet Logo" class="flex-center logo-wrapper header-center">
+			<img class="logo" src="sj.png" alt="Scramjet" />
+			<h1>Scramjet | MW</h1>
+		</div>
+		<div class="flex-center desc left-margin">
+			<p>
+				Scramjet is an experimental interception based web proxy designed to
+				evade internet censorship, bypass arbitrary web browser restrictions and
+				innovate web proxy technologies.
+			</p>
+		</div>
+
+		<form id="sj-form" class="flex-center">
+			<input
+				id="sj-search-engine"
+				value="https://duckduckgo.com/?q=%s"
+				type="hidden"
+			/>
+			<input id="sj-address" type="text" placeholder="Search the web freely" />
+		</form>
+		<div class="desc left-margin">
+			<p id="sj-error"></p>
+			<pre id="sj-error-code"></pre>
+		</div>
+		<footer>
+			<div>
+				<a
+					title="The Mercury Workshop GitHub organization"
+					href="https://github.com/MercuryWorkshop"
+					>Mercury Workshop</a
+				>
+				<a
+					title="The example demo app for Scramjet"
+					href="https://github.com/MercuryWorkshop/Scramjet-Demo"
+					>GitHub</a
+				>
+				<a title="License information" href="credits.html">Credits</a>
+			</div>
+			<div>
+				<span>Scramjet &copy; MW 2025</span>
+			</div>
+		</footer>
+	</body>
 </html>
+       
